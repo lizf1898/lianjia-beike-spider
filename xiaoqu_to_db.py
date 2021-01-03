@@ -7,6 +7,8 @@
 
 import os
 import pymysql
+from pyparsing import unicode
+
 from lib.utility.path import DATA_PATH
 from lib.zone.city import *
 from lib.utility.date import *

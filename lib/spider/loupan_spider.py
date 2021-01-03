@@ -75,30 +75,33 @@ class LouPanBaseSpider(BaseSpider):
             # 获得有小区信息的panel
             house_elements = soup.find_all('li', class_="resblock-list")
             for house_elem in house_elements:
-                price = house_elem.find('span', class_="number")
-                total = house_elem.find('div', class_="second")
-                loupan = house_elem.find('a', class_='name')
-
-                # 继续清理数据
                 try:
-                    price = price.text.strip()
+                    price = house_elem.find('span', class_="number")
+                    total = house_elem.find('div', class_="second")
+                    loupan = house_elem.find('a', class_='name')
+
+                    # 继续清理数据
+                    try:
+                        price = price.text.strip()
+                    except Exception as e:
+                        price = '0'
+
+                    loupan = loupan.text.replace("\n", "")
+
+                    try:
+                        total = total.text.strip().replace(u'总价', '')
+                        total = total.replace(u'/套起', '')
+                    except Exception as e:
+                        total = '0'
+
+                    print("{0} {1} {2} ".format(
+                        loupan, price, total))
+
+                    # 作为对象保存
+                    loupan = LouPan(loupan, price, total)
+                    loupan_list.append(loupan)
                 except Exception as e:
-                    price = '0'
-
-                loupan = loupan.text.replace("\n", "")
-
-                try:
-                    total = total.text.strip().replace(u'总价', '')
-                    total = total.replace(u'/套起', '')
-                except Exception as e:
-                    total = '0'
-
-                print("{0} {1} {2} ".format(
-                    loupan, price, total))
-
-                # 作为对象保存
-                loupan = LouPan(loupan, price, total)
-                loupan_list.append(loupan)
+                    continue
         return loupan_list
 
     def start(self):
