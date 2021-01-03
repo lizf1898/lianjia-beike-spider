@@ -8,6 +8,7 @@ import re
 import threadpool
 from bs4 import BeautifulSoup
 from lib.item.xiaoqu import *
+from lib.utility.invoke import invoke_web_page
 from lib.zone.city import get_city
 from lib.spider.base_spider import *
 from lib.utility.date import *
@@ -55,6 +56,7 @@ class XiaoQuBaseSpider(BaseSpider):
         logger.info(page)
 
         headers = create_headers()
+        # response = invoke_web_page(page, headers=headers)
         response = requests.get(page, timeout=10, headers=headers)
         html = response.content
         soup = BeautifulSoup(html, "lxml")
@@ -74,6 +76,7 @@ class XiaoQuBaseSpider(BaseSpider):
             page = 'http://{0}.{1}.com/xiaoqu/{2}/pg{3}'.format(city, SPIDER_NAME, area, i)
             print(page)  # 打印版块页面地址
             BaseSpider.random_delay()
+            # response = invoke_web_page(page, headers=headers)
             response = requests.get(page, timeout=10, headers=headers)
             html = response.content
             soup = BeautifulSoup(html, "lxml")
@@ -111,10 +114,11 @@ class XiaoQuBaseSpider(BaseSpider):
             areas_of_district = get_areas(city, district)
             print('{0}: Area list:  {1}'.format(district, areas_of_district))
             # 用list的extend方法,L1.extend(L2)，该方法将参数L2的全部元素添加到L1的尾部
-            areas.extend(areas_of_district)
-            # 使用一个字典来存储区县和板块的对应关系, 例如{'beicai': 'pudongxinqu', }
-            for area in areas_of_district:
-                area_dict[area] = district
+            if areas_of_district is not None:
+                areas.extend(areas_of_district)
+                # 使用一个字典来存储区县和板块的对应关系, 例如{'beicai': 'pudongxinqu', }
+                for area in areas_of_district:
+                    area_dict[area] = district
         print("Area:", areas)
         print("District and areas:", area_dict)
 

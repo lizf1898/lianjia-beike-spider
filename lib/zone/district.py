@@ -41,13 +41,22 @@ def get_districts(city):
     ch_names = list()
     for element in elements:
         link = element.attrib['href']
-        en_names.append(link.split('/')[-2])
-        ch_names.append(element.text)
+        if city == 'bj':
+            if link.split('/')[-2] in ['dongcheng', 'xicheng', 'chaoyang', 'haidian']:
+                en_names.append(link.split('/')[-2])
+                ch_names.append(element.text)
+        elif city == 'zz':
+            if link.split('/')[-2] in ['zhengdongxinqu', 'jinshui']:
+                en_names.append(link.split('/')[-2])
+                ch_names.append(element.text)
+        else:
+            en_names.append(link.split('/')[-2])
+            ch_names.append(element.text)
 
-        # 打印区县英文和中文名列表
+    # 打印区县英文和中文名列表
     for index, name in enumerate(en_names):
         chinese_city_district_dict[name] = ch_names[index]
-        # print(name + ' -> ' + ch_names[index])
+        print(name + ' -> ' + ch_names[index])
     return en_names
 
 

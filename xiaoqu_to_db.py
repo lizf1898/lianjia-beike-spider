@@ -35,11 +35,11 @@ if __name__ == '__main__':
     # 设置目标数据库
     ##################################
     # mysql/mongodb/excel/json/csv
-    # database = "mysql"
+    database = "mysql"
     # database = "mongodb"
     # database = "excel"
     # database = "json"
-    database = "csv"
+    # database = "csv"
     ##################################
     db = None
     collection = None
@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     if database == "mysql":
         import records
-        db = records.Database('mysql://root:123456@localhost/lianjia?charset=utf8', encoding='utf-8')
+        db = records.Database('mysql://root:weifeng@localhost/market?charset=utf8', encoding='utf-8')
     elif database == "mongodb":
         from pymongo import MongoClient
         conn = MongoClient('localhost', 27017)

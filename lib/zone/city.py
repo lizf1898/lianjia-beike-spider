@@ -7,6 +7,9 @@
 # 不过暂时只有下面这些城市在链家上是统一样式
 
 import sys
+
+from pip._vendor.distlib.compat import raw_input
+
 from lib.utility.version import PYTHON_3
 from lib.utility.log import *
 
@@ -31,7 +34,7 @@ cities = {
     'tj': '天津',
     'wh': '武汉',
     'xm': '厦门',
-    'yt': '烟台',
+    'zz': '郑州',
 }
 
 
