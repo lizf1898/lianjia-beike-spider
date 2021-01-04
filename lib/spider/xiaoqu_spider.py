@@ -100,10 +100,11 @@ class XiaoQuBaseSpider(BaseSpider):
                                 # 作为对象保存
                                 xiaoqu = XiaoQu(chinese_district, chinese_area, name, price, on_sale)
                                 xiaoqu_list.append(xiaoqu)
-                            return xiaoqu_list
+                            k = 5
                         except Exception as e:
                             k = k + 1
                             continue
+                return xiaoqu_list
             except Exception as e:
                 j = j + 1
                 continue

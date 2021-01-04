@@ -27,7 +27,7 @@ class BaseSpider(object):
     @staticmethod
     def random_delay():
         if RANDOM_DELAY:
-            time.sleep(random.randint(10, 16))
+            time.sleep(random.randint(0, 10))
 
     def __init__(self, name):
         self.name = name

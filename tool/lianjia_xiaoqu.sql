@@ -38,6 +38,17 @@ CREATE TABLE `xiaoqu` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `loupan`;
+
+CREATE TABLE `loupan` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `city` varchar(10) DEFAULT NULL,
+  `date` varchar(8) DEFAULT NULL,
+  `loupan` varchar(50) DEFAULT NULL,
+  `price` int(11) DEFAULT NULL,
+  `total` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;

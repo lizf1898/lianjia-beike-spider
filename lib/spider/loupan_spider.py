@@ -48,61 +48,74 @@ class LouPanBaseSpider(BaseSpider):
         page = 'http://{0}.fang.{1}.com/loupan/'.format(city_name, SPIDER_NAME)
         print(page)
         headers = create_headers()
-        response = requests.get(page, timeout=10, headers=headers)
-        html = response.content
-        soup = BeautifulSoup(html, "lxml")
+        j = 0
+        while j < 5:
+            try:
+                response = requests.get(page, timeout=10, headers=headers)
+                html = response.content
+                soup = BeautifulSoup(html, "lxml")
 
-        # 获得总的页数
-        try:
-            page_box = soup.find_all('div', class_='page-box')[0]
-            matches = re.search('.*data-total-count="(\d+)".*', str(page_box))
-            total_page = int(math.ceil(int(matches.group(1)) / 10))
-        except Exception as e:
-            print("\tWarning: only find one page for {0}".format(city_name))
-            print(e)
-
-        print(total_page)
-        # 从第一页开始,一直遍历到最后一页
-        headers = create_headers()
-        for i in range(1, total_page + 1):
-            page = 'http://{0}.fang.{1}.com/loupan/pg{2}'.format(city_name, SPIDER_NAME, i)
-            print(page)
-            BaseSpider.random_delay()
-            response = requests.get(page, timeout=10, headers=headers)
-            html = response.content
-            soup = BeautifulSoup(html, "lxml")
-
-            # 获得有小区信息的panel
-            house_elements = soup.find_all('li', class_="resblock-list")
-            for house_elem in house_elements:
+                # 获得总的页数
                 try:
-                    price = house_elem.find('span', class_="number")
-                    total = house_elem.find('div', class_="second")
-                    loupan = house_elem.find('a', class_='name')
-
-                    # 继续清理数据
-                    try:
-                        price = price.text.strip()
-                    except Exception as e:
-                        price = '0'
-
-                    loupan = loupan.text.replace("\n", "")
-
-                    try:
-                        total = total.text.strip().replace(u'总价', '')
-                        total = total.replace(u'/套起', '')
-                    except Exception as e:
-                        total = '0'
-
-                    print("{0} {1} {2} ".format(
-                        loupan, price, total))
-
-                    # 作为对象保存
-                    loupan = LouPan(loupan, price, total)
-                    loupan_list.append(loupan)
+                    page_box = soup.find_all('div', class_='page-box')[0]
+                    matches = re.search('.*data-total-count="(\d+)".*', str(page_box))
+                    total_page = int(math.ceil(int(matches.group(1)) / 10))
                 except Exception as e:
-                    continue
-        return loupan_list
+                    print("\tWarning: only find one page for {0}".format(city_name))
+                    print(e)
+
+                print(total_page)
+                # 从第一页开始,一直遍历到最后一页
+                headers = create_headers()
+                for i in range(1, total_page + 1):
+                    page = 'http://{0}.fang.{1}.com/loupan/pg{2}'.format(city_name, SPIDER_NAME, i)
+                    print(page)
+                    BaseSpider.random_delay()
+                    k = 0
+                    while k < 5:
+                        try:
+                            response = requests.get(page, timeout=10, headers=headers)
+                            html = response.content
+                            soup = BeautifulSoup(html, "lxml")
+
+                            # 获得有小区信息的panel
+                            house_elements = soup.find_all('li', class_="resblock-list")
+                            for house_elem in house_elements:
+                                try:
+                                    price = house_elem.find('span', class_="number")
+                                    total = house_elem.find('div', class_="second")
+                                    loupan = house_elem.find('a', class_='name')
+
+                                    # 继续清理数据
+                                    try:
+                                        price = price.text.strip()
+                                    except Exception as e:
+                                        price = '0'
+
+                                    loupan = loupan.text.replace("\n", "")
+
+                                    try:
+                                        total = total.text.strip().replace(u'总价', '')
+                                        total = total.replace(u'/套起', '')
+                                    except Exception as e:
+                                        total = '0'
+
+                                    print("{0} {1} {2} ".format(
+                                        loupan, price, total))
+
+                                    # 作为对象保存
+                                    loupan = LouPan(loupan, price, total)
+                                    loupan_list.append(loupan)
+                                    k = 5
+                                except Exception as e:
+                                    continue
+                        except Exception as e:
+                            k = k + 1
+                            continue
+                return loupan_list
+            except Exception as e:
+                j = j + 1
+                continue
 
     def start(self):
         city = get_city()
