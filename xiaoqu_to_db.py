@@ -95,7 +95,7 @@ if __name__ == '__main__':
     row = 0
     col = 0
     for csv in files:
-        with open(csv, 'r') as f:
+        with open(csv, 'r', encoding='utf-8') as f:
             for line in f:
                 count += 1
                 text = line.strip()

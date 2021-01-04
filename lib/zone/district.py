@@ -33,31 +33,37 @@ def get_districts(city):
     """
     url = 'https://{0}.{1}.com/xiaoqu/'.format(city, SPIDER_NAME)
     headers = create_headers()
-    response = requests.get(url, timeout=10, headers=headers)
-    html = response.content
-    root = etree.HTML(html)
-    elements = root.xpath(CITY_DISTRICT_XPATH)
-    en_names = list()
-    ch_names = list()
-    for element in elements:
-        link = element.attrib['href']
-        if city == 'bj':
-            if link.split('/')[-2] in ['dongcheng', 'xicheng', 'chaoyang', 'haidian']:
-                en_names.append(link.split('/')[-2])
-                ch_names.append(element.text)
-        elif city == 'zz':
-            if link.split('/')[-2] in ['zhengdongxinqu', 'jinshui']:
-                en_names.append(link.split('/')[-2])
-                ch_names.append(element.text)
-        else:
-            en_names.append(link.split('/')[-2])
-            ch_names.append(element.text)
+    j = 0
+    while j < 5:
+        try:
+            response = requests.get(url, timeout=10, headers=headers)
+            html = response.content
+            root = etree.HTML(html)
+            elements = root.xpath(CITY_DISTRICT_XPATH)
+            en_names = list()
+            ch_names = list()
+            for element in elements:
+                link = element.attrib['href']
+                if city == 'bj':
+                    if link.split('/')[-2] in ['dongcheng', 'xicheng', 'chaoyang', 'haidian']:
+                        en_names.append(link.split('/')[-2])
+                        ch_names.append(element.text)
+                elif city == 'zz':
+                    if link.split('/')[-2] in ['zhengdongxinqu', 'jinshui']:
+                        en_names.append(link.split('/')[-2])
+                        ch_names.append(element.text)
+                else:
+                    en_names.append(link.split('/')[-2])
+                    ch_names.append(element.text)
 
-    # 打印区县英文和中文名列表
-    for index, name in enumerate(en_names):
-        chinese_city_district_dict[name] = ch_names[index]
-        print(name + ' -> ' + ch_names[index])
-    return en_names
+            # 打印区县英文和中文名列表
+            for index, name in enumerate(en_names):
+                chinese_city_district_dict[name] = ch_names[index]
+                print(name + ' -> ' + ch_names[index])
+            return en_names
+        except Exception as e:
+            j = j + 1
+            continue
 
 
 if __name__ == '__main__':

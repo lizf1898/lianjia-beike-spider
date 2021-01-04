@@ -5,17 +5,17 @@
 # 爬取小区数据的爬虫派生类
 
 import re
+
 import threadpool
 from bs4 import BeautifulSoup
+
 from lib.item.xiaoqu import *
-from lib.utility.invoke import invoke_web_page
-from lib.zone.city import get_city
 from lib.spider.base_spider import *
 from lib.utility.date import *
+from lib.utility.log import *
 from lib.utility.path import *
 from lib.zone.area import *
-from lib.utility.log import *
-import lib.utility.version
+from lib.zone.city import get_city
 
 
 class XiaoQuBaseSpider(BaseSpider):
@@ -30,7 +30,7 @@ class XiaoQuBaseSpider(BaseSpider):
         """
         district_name = area_dict.get(area_name, "")
         csv_file = self.today_path + "/{0}_{1}.csv".format(district_name, area_name)
-        with open(csv_file, "w") as f:
+        with open(csv_file, "w", encoding='utf-8') as f:
             # 开始获得需要的板块数据
             xqs = self.get_xiaoqu_info(city_name, area_name)
             # 锁定
@@ -56,47 +56,57 @@ class XiaoQuBaseSpider(BaseSpider):
         logger.info(page)
 
         headers = create_headers()
-        # response = invoke_web_page(page, headers=headers)
-        response = requests.get(page, timeout=10, headers=headers)
-        html = response.content
-        soup = BeautifulSoup(html, "lxml")
+        j = 0
+        while j < 5:
+            try:
+                response = requests.get(page, timeout=10, headers=headers)
+                html = response.content
+                soup = BeautifulSoup(html, "lxml")
 
-        # 获得总的页数
-        try:
-            page_box = soup.find_all('div', class_='page-box')[0]
-            matches = re.search('.*"totalPage":(\d+),.*', str(page_box))
-            total_page = int(matches.group(1))
-        except Exception as e:
-            print("\tWarning: only find one page for {0}".format(area))
-            print(e)
+                # 获得总的页数
+                try:
+                    page_box = soup.find_all('div', class_='page-box')[0]
+                    matches = re.search('.*"totalPage":(\d+),.*', str(page_box))
+                    total_page = int(matches.group(1))
+                except Exception as e:
+                    print("\tWarning: only find one page for {0}".format(area))
+                    print(e)
 
-        # 从第一页开始,一直遍历到最后一页
-        for i in range(1, total_page + 1):
-            headers = create_headers()
-            page = 'http://{0}.{1}.com/xiaoqu/{2}/pg{3}'.format(city, SPIDER_NAME, area, i)
-            print(page)  # 打印版块页面地址
-            BaseSpider.random_delay()
-            # response = invoke_web_page(page, headers=headers)
-            response = requests.get(page, timeout=10, headers=headers)
-            html = response.content
-            soup = BeautifulSoup(html, "lxml")
+                # 从第一页开始,一直遍历到最后一页
+                for i in range(1, total_page + 1):
+                    headers = create_headers()
+                    page = 'http://{0}.{1}.com/xiaoqu/{2}/pg{3}'.format(city, SPIDER_NAME, area, i)
+                    print(page)  # 打印版块页面地址
+                    BaseSpider.random_delay()
+                    k = 0
+                    while k < 5:
+                        try:
+                            response = requests.get(page, timeout=10, headers=headers)
+                            html = response.content
+                            soup = BeautifulSoup(html, "lxml")
 
-            # 获得有小区信息的panel
-            house_elems = soup.find_all('li', class_="xiaoquListItem")
-            for house_elem in house_elems:
-                price = house_elem.find('div', class_="totalPrice")
-                name = house_elem.find('div', class_='title')
-                on_sale = house_elem.find('div', class_="xiaoquListItemSellCount")
+                            # 获得有小区信息的panel
+                            house_elems = soup.find_all('li', class_="xiaoquListItem")
+                            for house_elem in house_elems:
+                                price = house_elem.find('div', class_="totalPrice")
+                                name = house_elem.find('div', class_='title')
+                                on_sale = house_elem.find('div', class_="xiaoquListItemSellCount")
 
-                # 继续清理数据
-                price = price.text.strip()
-                name = name.text.replace("\n", "")
-                on_sale = on_sale.text.replace("\n", "").strip()
+                                # 继续清理数据
+                                price = price.text.strip()
+                                name = name.text.replace("\n", "")
+                                on_sale = on_sale.text.replace("\n", "").strip()
 
-                # 作为对象保存
-                xiaoqu = XiaoQu(chinese_district, chinese_area, name, price, on_sale)
-                xiaoqu_list.append(xiaoqu)
-        return xiaoqu_list
+                                # 作为对象保存
+                                xiaoqu = XiaoQu(chinese_district, chinese_area, name, price, on_sale)
+                                xiaoqu_list.append(xiaoqu)
+                            return xiaoqu_list
+                        except Exception as e:
+                            k = k + 1
+                            continue
+            except Exception as e:
+                j = j + 1
+                continue
 
     def start(self):
         city = get_city()
