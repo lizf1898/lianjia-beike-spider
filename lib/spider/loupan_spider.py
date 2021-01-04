@@ -27,7 +27,7 @@ class LouPanBaseSpider(BaseSpider):
         :return: None
         """
         csv_file = self.today_path + "/{0}.csv".format(city_name)
-        with open(csv_file, "w") as f:
+        with open(csv_file, "w", encoding='utf-8') as f:
             # 开始获得需要的板块数据
             loupans = self.get_loupan_info(city_name)
             self.total_num = len(loupans)

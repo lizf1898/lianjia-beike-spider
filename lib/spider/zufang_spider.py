@@ -28,7 +28,7 @@ class ZuFangBaseSpider(BaseSpider):
         """
         district_name = area_dict.get(area_name, "")
         csv_file = self.today_path + "/{0}_{1}.csv".format(district_name, area_name)
-        with open(csv_file, "w") as f:
+        with open(csv_file, "w", encoding='utf-8') as f:
             # 开始获得需要的板块数据
             zufangs = self.get_area_zufang_info(city_name, area_name)
             # 锁定

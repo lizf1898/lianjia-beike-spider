@@ -44,7 +44,7 @@ def get_ershou_img_urls(city):
     # 清理数据
     count = 0
     for csv in files:
-        with open(csv, 'r') as f:
+        with open(csv, "r", encoding='utf-8') as f:
             for line in f:
                 count += 1
                 text = line.strip()
