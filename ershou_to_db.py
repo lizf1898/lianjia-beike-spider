@@ -56,16 +56,16 @@ if __name__ == '__main__':
         from pymongo import MongoClient
         conn = MongoClient('localhost', 27017)
         db = conn.lianjia  # 连接lianjia数据库，没有则自动创建
-        collection = db.xiaoqu  # 使用xiaoqu集合，没有则自动创建
+        collection = db.ershou  # 使用ershou集合，没有则自动创建
     elif database == "excel":
         import xlsxwriter
-        workbook = xlsxwriter.Workbook('xiaoqu.xlsx')
+        workbook = xlsxwriter.Workbook('ershou.xlsx')
         worksheet = workbook.add_worksheet()
     elif database == "json":
         import json
     elif database == "csv":
-        csv_file = open("xiaoqu.csv", "w")
-        line = "{0};{1};{2};{3};{4};{5};{6}\n".format('city_ch', 'date', 'district', 'area', 'name', 'price', 'sale')
+        csv_file = open("ershou.csv", "w")
+        line = "{0};{1};{2};{3};{4};{5};{6}\n".format('city_ch', 'date', 'district', 'area', 'desc', 'price', 'pic')
         csv_file.write(line)
 
     city = get_city()
@@ -75,12 +75,12 @@ if __name__ == '__main__':
     # date = "20180331"   # 指定采集数据的日期
     # city = "sh"         # 指定采集数据的城市
     city_ch = get_chinese_city(city)
-    csv_dir = "{0}/{1}/xiaoqu/{2}/{3}".format(DATA_PATH, SPIDER_NAME, city, date)
+    csv_dir = "{0}/{1}/ershou/{2}/{3}".format(DATA_PATH, SPIDER_NAME, city, date)
 
     files = list()
     if not os.path.exists(csv_dir):
         print("{0} does not exist.".format(csv_dir))
-        print("Please run 'python xiaoqu.py' firstly.")
+        print("Please run 'python ershou.py' firstly.")
         print("Bye.")
         exit(0)
     else:
@@ -101,39 +101,46 @@ if __name__ == '__main__':
                 text = line.strip()
                 try:
                     # 如果小区名里面没有逗号，那么总共是6项
-                    if text.count(',') == 5:
-                        date, district, area, name, price, sale = text.split(',')
-                    elif text.count(',') < 5:
+                    if text.count(',') == 6:
+                        fields = text.split(',')
+                        date = fields[0]
+                        district = fields[1]
+                        area = fields[2]
+                        name = fields[3]
+                        price = fields[4]
+                        desc = fields[5]
+                        pic = ','.join(fields[6:])
+                    elif text.count(',') < 6:
                         continue
                     else:
                         fields = text.split(',')
                         date = fields[0]
                         district = fields[1]
                         area = fields[2]
-                        name = ','.join(fields[3:-2])
-                        price = fields[-2]
-                        sale = fields[-1]
+                        name = fields[3]
+                        price = fields[4]
+                        desc = fields[5]
+                        pic = ','.join(fields[6:])
                 except Exception as e:
                     print(text)
                     print(e)
                     continue
+                name = name.replace(r'm²', '')
                 name = name.replace(r'•', '')
-                sale = sale.replace(r'套在售二手房', '')
-                price = price.replace(r'暂无', '0')
-                price = price.replace(r'元/m2', '')
-                price = int(price)
-                sale = int(sale)
-                print("{0} {1} {2} {3} {4} {5}".format(date, district, area, name, price, sale))
+                desc = desc.replace(r'•', '')
+                price = price.replace(r'万', '')
+                price = float(price)
+                print("{0} {1} {2} {3} {4} {5}".format(date, district, area, name, price, desc))
                 # 写入mysql数据库
                 if database == "mysql":
-                    db.query('INSERT INTO xiaoqu (city, date, district, area, name, price, sale) '
-                             'VALUES(:city, :date, :district, :area, :name, :price, :sale)',
-                             city=city_ch, date=date, district=district, area=area, name=name, price=price,
-                             sale=sale)
+                    db.query('INSERT INTO ershou (city, date, district, area, name, price, `desc`, pic) '
+                             'VALUES(:city, :date, :district, :area, :name, :price, :desc, :pic)',
+                             city=city_ch, date=date, district=district, area=area, name=name, price=price, desc=desc,
+                             pic=pic)
                 # 写入mongodb数据库
                 elif database == "mongodb":
-                    data = dict(city=city_ch, date=date, district=district, area=area, name=name, price=price,
-                                sale=sale)
+                    data = dict(city=city_ch, date=date, district=district, area=area, name=name, price=price, desc=desc,
+                                pic=pic)
                     collection.insert(data)
                 elif database == "excel":
                     if not PYTHON_3:
@@ -143,7 +150,8 @@ if __name__ == '__main__':
                         worksheet.write_string(row, col + 3, unicode(area, 'utf-8'))
                         worksheet.write_string(row, col + 4, unicode(name, 'utf-8'))
                         worksheet.write_number(row, col + 5, price)
-                        worksheet.write_number(row, col + 6, sale)
+                        worksheet.write_string(row, col + 6, unicode(desc, 'utf-8'))
+                        worksheet.write_number(row, col + 7, unicode(pic, 'utf-8'))
                     else:
                         worksheet.write_string(row, col, city_ch)
                         worksheet.write_string(row, col + 1, date)
@@ -151,21 +159,22 @@ if __name__ == '__main__':
                         worksheet.write_string(row, col + 3, area)
                         worksheet.write_string(row, col + 4, name)
                         worksheet.write_number(row, col + 5, price)
-                        worksheet.write_number(row, col + 6, sale)
+                        worksheet.write_string(row, col + 6, desc)
+                        worksheet.write_number(row, col + 7, pic)
                     row += 1
                 elif database == "json":
                     data = dict(city=city_ch, date=date, district=district, area=area, name=name, price=price,
-                                sale=sale)
+                                desc=desc, pic=pic)
                     datas.append(data)
                 elif database == "csv":
-                    line = "{0};{1};{2};{3};{4};{5};{6}\n".format(city_ch, date, district, area, name, price, sale)
+                    line = "{0};{1};{2};{3};{4};{5};{6}\n".format(city_ch, date, district, area, name, price, desc, pic)
                     csv_file.write(line)
 
     # 写入，并且关闭句柄
     if database == "excel":
         workbook.close()
     elif database == "json":
-        json.dump(datas, open('xiaoqu.json', 'w'), ensure_ascii=False, indent=2)
+        json.dump(datas, open('ershou.json', 'w'), ensure_ascii=False, indent=2)
     elif database == "csv":
         csv_file.close()
 

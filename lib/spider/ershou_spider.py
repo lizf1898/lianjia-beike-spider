@@ -102,10 +102,14 @@ class ErShouSpider(BaseSpider):
                                 # 继续清理数据
                                 price = price.text.strip()
                                 name = name.text.replace("\n", "")
+                                name = name.replace("，", "")
+                                name = name.replace(",", "")
+                                name = name.replace("·", "")
                                 desc = desc.text.replace("\n", "").strip()
+                                desc = desc.replace(" ", "")
                                 pic = pic.get('data-original').strip()
+                                pic = pic.replace("，", " ")
                                 # print(pic)
-
 
                                 # 作为对象保存
                                 ershou = ErShou(chinese_district, chinese_area, name, price, desc, pic)

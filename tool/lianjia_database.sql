@@ -31,7 +31,7 @@ CREATE TABLE `xiaoqu` (
   `date` varchar(8) DEFAULT NULL,
   `district` varchar(50) DEFAULT NULL,
   `area` varchar(50) DEFAULT NULL,
-  `xiaoqu` varchar(100) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
   `price` int(11) DEFAULT NULL,
   `sale` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -44,12 +44,27 @@ CREATE TABLE `loupan` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `city` varchar(10) DEFAULT NULL,
   `date` varchar(8) DEFAULT NULL,
-  `loupan` varchar(50) DEFAULT NULL,
+  `name` varchar(50) DEFAULT NULL,
   `price` int(11) DEFAULT NULL,
-  `total` int(11) DEFAULT NULL,
+  `total` float DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
+DROP TABLE IF EXISTS `ershou`;
+
+CREATE TABLE `ershou` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `city` varchar(10) DEFAULT NULL,
+  `date` varchar(8) DEFAULT NULL,
+  `district` varchar(50) DEFAULT NULL,
+  `area` varchar(50) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `price` float DEFAULT NULL,
+  `desc` varchar(50) DEFAULT NULL,
+  `pic` varchar(200) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
